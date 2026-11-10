@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{{ business_name }} – Order Keychain</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', system-ui, sans-serif; }
+        .color-btn.selected {
+            outline: 3px solid #667eea;
+            outline-offset: 3px;
+            transform: scale(1.08);
+        }
+        .step { display: none; }
+        .step.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .progress-bar {
+            transition: width 0.4s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-5 px-4 shadow-lg">
+        <div class="max-w-lg mx-auto text-center">
+            <h1 class="text-2xl font-bold tracking-tight">{{ business_name }}</h1>
+            <p class="text-indigo-100 text-sm mt-1">Custom Name Keychain</p>
+        </div>
+    </header>
+
+    <!-- Progress -->
+    <div class="max-w-lg mx-auto px-4 pt-4">
+        <div class="flex justify-between text-xs text-gray-500 mb-1">
+            <span id="step-label">Step 1 of 4</span>
+            <span id="step-name">Product</span>
+        </div>
+        <div class="w-full bg-gray-200 rounded-full h-2">
+            <div id="progress" class="progress-bar bg-indigo-600 h-2 rounded-full" style="width: 25%"></div>
+        </div>
+    </div>
+
+    <main class="max-w-lg mx-auto px-4 py-6">
+
+        <!-- ========== STEP 1: Product ========== -->
+        <div id="step1" class="step active">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-1">Custom Name Keychain</h2>
+                <p class="text-3xl font-bold text-indigo-600 mb-6">{{ price }} <span class="text-base font-normal text-gray-500">EGP each</span></p>
+
+                <div class="mb-5">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Name on Keychain *</label>
+                    <input type="text" id="keychain_name" maxlength="20" placeholder="e.g. Amira"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-lg">
+                    <p class="text-xs text-gray-400 mt-1">Max 20 characters</p>
+                </div>
+
+                <div class="mb-5">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Quantity *</label>
+                    <div class="flex items-center gap-4">
+                        <button type="button" onclick="changeQty(-1)" class="w-12 h-12 rounded-full bg-gray-100 text-xl font-bold text-gray-700 hover:bg-gray-200 active:scale-95 transition">−</button>
+                        <span id="qty-display" class="text-2xl font-semibold w-12 text-center">1</span>
+                        <button type="button" onclick="changeQty(1)" class="w-12 h-12 rounded-full bg-gray-100 text-xl font-bold text-gray-700 hover:bg-gray-200 active:scale-95 transition">+</button>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-3">Choose Color *</label>
+                    <div class="grid grid-cols-4 gap-3" id="color-grid">
+                        {% for c in colors %}
+                        <button type="button"
+                                class="color-btn aspect-square rounded-xl shadow-sm border border-gray-200 flex items-center justify-center text-xs font-medium transition-all active:scale-95"
+                                style="background-color: {{ c.hex }}; color: {% if c.name in ['Black', 'Purple', 'Neon Pink', 'Red', 'Peak Green', 'Oil Green'] %}white{% else %}#222{% endif %};"
+                                data-color="{{ c.name }}"
+                                onclick="selectColor(this)">
+                            {{ c.name.split(' ')[0] }}
+                        </button>
+                        {% endfor %}
+                    </div>
+                    <p id="selected-color-text" class="text-sm text-gray-500 mt-3 hidden">Selected: <span class="font-medium text-gray-800"></span></p>
+                </div>
+
+                <div class="bg-indigo-50 rounded-xl p-4 flex justify-between items-center">
+                    <span class="text-gray-600">Total</span>
+                    <span id="total-display" class="text-xl font-bold text-indigo-700">{{ price }} EGP</span>
+                </div>
+            </div>
+
+            <button onclick="goToStep(2)" class="w-full mt-5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-4 rounded-xl shadow-md active:scale-[0.98] transition">
+                Continue →
+            </button>
+        </div>
+
+        <!-- ========== STEP 2: Customer Info ========== -->
+        <div id="step2" class="step">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-5">Your Information</h2>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                        <input type="text" id="customer_name" placeholder="Your full name"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
+                        <input type="tel" id="customer_phone" placeholder="01xxxxxxxxx"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                        <input type="email" id="customer_email" placeholder="you@example.com"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-3 mt-5">
+                <button onclick="goToStep(1)" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-4 rounded-xl transition">← Back</button>
+                <button onclick="goToStep(3)" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-4 rounded-xl shadow-md transition">Continue →</button>
+            </div>
+        </div>
+
+        <!-- ========== STEP 3: Payment ========== -->
+        <div id="step3" class="step">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-5">Payment Method</h2>
+
+                <div class="space-y-3 mb-6">
+                    <label class="flex items-center gap-4 p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-indigo-300 transition has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50">
+                        <input type="radio" name="payment" value="Cash" class="w-5 h-5 text-indigo-600" checked onchange="toggleInstapay()">
+                        <div>
+                            <span class="font-medium text-gray-800">Cash</span>
+                            <p class="text-sm text-gray-500">Pay when you collect</p>
+                        </div>
+                    </label>
+
+                    <label class="flex items-center gap-4 p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-indigo-300 transition has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-50">
+                        <input type="radio" name="payment" value="Instapay" class="w-5 h-5 text-indigo-600" onchange="toggleInstapay()">
+                        <div>
+                            <span class="font-medium text-gray-800">Instapay</span>
+                            <p class="text-sm text-gray-500">Send money now</p>
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Instapay details -->
+                <div id="instapay-box" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-5 mb-5">
+                    <p class="text-sm text-amber-800 font-medium mb-2">Send the total amount to this number:</p>
+                    <div class="bg-white rounded-lg py-3 px-4 text-center border border-amber-300">
+                        <span class="text-2xl font-bold tracking-wider text-amber-900">{{ instapay_number }}</span>
+                    </div>
+                    <p class="text-xs text-amber-700 mt-3 text-center">After sending, you can optionally upload a screenshot below</p>
+                </div>
+
+                <!-- Screenshot upload -->
+                <div id="screenshot-section" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Payment Screenshot (optional)</label>
+                    <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-indigo-400 transition">
+                        <input type="file" id="screenshot" accept="image/*" class="hidden" onchange="previewScreenshot(this)">
+                        <label for="screenshot" class="cursor-pointer">
+                            <div id="upload-placeholder">
+                                <svg class="mx-auto h-10 w-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                <p class="mt-2 text-sm text-gray-500">Tap to upload screenshot</p>
+                            </div>
+                            <img id="screenshot-preview" class="hidden max-h-40 mx-auto rounded-lg">
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-3 mt-5">
+                <button onclick="goToStep(2)" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-4 rounded-xl transition">← Back</button>
+                <button onclick="goToStep(4)" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-4 rounded-xl shadow-md transition">Review →</button>
+            </div>
+        </div>
+
+        <!-- ========== STEP 4: Review & Confirm ========== -->
+        <div id="step4" class="step">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-5">Review Your Order</h2>
+
+                <div class="space-y-3 text-sm" id="review-content">
+                    <!-- Filled by JS -->
+                </div>
+            </div>
+
+            <div class="flex gap-3 mt-5">
+                <button onclick="goToStep(3)" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-4 rounded-xl transition">← Back</button>
+                <button id="confirm-btn" onclick="submitOrder()" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-4 rounded-xl shadow-md transition">
+                    Confirm Order
+                </button>
+            </div>
+        </div>
+
+        <!-- ========== SUCCESS ========== -->
+        <div id="success" class="step">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">Order Confirmed!</h2>
+                <p class="text-gray-500 mb-6">Thank you for ordering with {{ business_name }}</p>
+
+                <div class="bg-gray-50 rounded-xl p-5 text-left space-y-3 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Order Number</span>
+                        <span id="result-order-number" class="font-bold text-indigo-600"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Date & Time</span>
+                        <span id="result-datetime" class="font-medium"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Total</span>
+                        <span id="result-total" class="font-bold text-green-600"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Estimated Ready</span>
+                        <span class="font-medium">{{ estimated_days }}</span>
+                    </div>
+                </div>
+
+                <p class="text-xs text-gray-400 mt-6">A confirmation has been sent to the shop.<br>Please save your Order Number.</p>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        let currentStep = 1;
+        let quantity = 1;
+        let selectedColor = null;
+        const PRICE = {{ price }};
+
+        function changeQty(delta) {
+            quantity = Math.max(1, Math.min(50, quantity + delta));
+            document.getElementById('qty-display').textContent = quantity;
+            document.getElementById('total-display').textContent = (quantity * PRICE) + ' EGP';
+        }
+
+        function selectColor(btn) {
+            document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            selectedColor = btn.dataset.color;
+            const text = document.getElementById('selected-color-text');
+            text.classList.remove('hidden');
+            text.querySelector('span').textContent = selectedColor;
+        }
+
+        function toggleInstapay() {
+            const isInstapay = document.querySelector('input[name="payment"]:checked').value === 'Instapay';
+            document.getElementById('instapay-box').classList.toggle('hidden', !isInstapay);
+            document.getElementById('screenshot-section').classList.toggle('hidden', !isInstapay);
+        }
+
+        function previewScreenshot(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    document.getElementById('upload-placeholder').classList.add('hidden');
+                    const img = document.getElementById('screenshot-preview');
+                    img.src = e.target.result;
+                    img.classList.remove('hidden');
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function goToStep(step) {
+            // Validation
+            if (step === 2) {
+                const name = document.getElementById('keychain_name').value.trim();
+                if (!name) { alert('Please enter the name for the keychain'); return; }
+                if (!selectedColor) { alert('Please choose a color'); return; }
+            }
+            if (step === 3) {
+                const cname = document.getElementById('customer_name').value.trim();
+                const phone = document.getElementById('customer_phone').value.trim();
+                const email = document.getElementById('customer_email').value.trim();
+                if (!cname || !phone || !email) { alert('Please fill all fields'); return; }
+                if (!email.includes('@')) { alert('Please enter a valid email'); return; }
+            }
+            if (step === 4) {
+                buildReview();
+            }
+
+            // Update UI
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            document.getElementById('step' + step).classList.add('active');
+            currentStep = step;
+
+            const labels = ['', 'Product', 'Your Info', 'Payment', 'Review'];
+            document.getElementById('step-label').textContent = `Step ${step} of 4`;
+            document.getElementById('step-name').textContent = labels[step];
+            document.getElementById('progress').style.width = (step * 25) + '%';
+        }
+
+        function buildReview() {
+            const payment = document.querySelector('input[name="payment"]:checked').value;
+            const html = `
+                <div class="flex justify-between py-2 border-b border-gray-100">
+                    <span class="text-gray-500">Keychain Name</span>
+                    <span class="font-medium">${document.getElementById('keychain_name').value.trim()}</span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-gray-100">
+                    <span class="text-gray-500">Color</span>
+                    <span class="font-medium">${selectedColor}</span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-gray-100">
+                    <span class="text-gray-500">Quantity</span>
+                    <span class="font-medium">${quantity}</span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-gray-100">
+                    <span class="text-gray-500">Customer</span>
+                    <span class="font-medium">${document.getElementById('customer_name').value.trim()}</span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-gray-100">
+                    <span class="text-gray-500">Phone</span>
+                    <span class="font-medium">${document.getElementById('customer_phone').value.trim()}</span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-gray-100">
+                    <span class="text-gray-500">Email</span>
+                    <span class="font-medium">${document.getElementById('customer_email').value.trim()}</span>
+                </div>
+                <div class="flex justify-between py-2 border-b border-gray-100">
+                    <span class="text-gray-500">Payment</span>
+                    <span class="font-medium">${payment}</span>
+                </div>
+                <div class="flex justify-between py-3 mt-2">
+                    <span class="text-gray-800 font-semibold">Total</span>
+                    <span class="text-xl font-bold text-indigo-600">${quantity * PRICE} EGP</span>
+                </div>
+            `;
+            document.getElementById('review-content').innerHTML = html;
+        }
+
+        async function submitOrder() {
+            const btn = document.getElementById('confirm-btn');
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+
+            const formData = new FormData();
+            formData.append('customer_name', document.getElementById('customer_name').value.trim());
+            formData.append('customer_phone', document.getElementById('customer_phone').value.trim());
+            formData.append('customer_email', document.getElementById('customer_email').value.trim());
+            formData.append('keychain_name', document.getElementById('keychain_name').value.trim());
+            formData.append('color', selectedColor);
+            formData.append('quantity', quantity);
+            formData.append('payment_method', document.querySelector('input[name="payment"]:checked').value);
+
+            const screenshotInput = document.getElementById('screenshot');
+            if (screenshotInput.files[0]) {
+                formData.append('screenshot', screenshotInput.files[0]);
+            }
+
+            try {
+                const res = await fetch('/api/order', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    document.getElementById('result-order-number').textContent = data.order_number;
+                    document.getElementById('result-datetime').textContent = data.created_at;
+                    document.getElementById('result-total').textContent = data.total + ' EGP';
+
+                    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+                    document.getElementById('success').classList.add('active');
+                    document.getElementById('step-label').textContent = 'Done';
+                    document.getElementById('step-name').textContent = 'Confirmed';
+                    document.getElementById('progress').style.width = '100%';
+                    document.getElementById('progress').classList.remove('bg-indigo-600');
+                    document.getElementById('progress').classList.add('bg-green-500');
+                } else {
+                    alert('Something went wrong. Please try again.');
+                    btn.disabled = false;
+                    btn.textContent = 'Confirm Order';
+                }
+            } catch (err) {
+                alert('Network error. Please check your connection and try again.');
+                btn.disabled = false;
+                btn.textContent = 'Confirm Order';
+            }
+        }
+    </script>
+</body>
+</html>
